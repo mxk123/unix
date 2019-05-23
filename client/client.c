@@ -11,7 +11,7 @@
 
 #define max(a,b) (a)>(b)?(a):(b)
 #define MAXLINE 1024
-
+//test
 void func(FILE* fd, int sockfd)
 {
 	int maxfdp1;

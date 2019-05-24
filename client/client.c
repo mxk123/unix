@@ -17,12 +17,14 @@ void func(FILE* fd, int sockfd)
 	int maxfdp1;
 	fd_set rset;
 	char recv[MAXLINE], send[MAXLINE] ;
-	int n = 0;
+	int n;
+	int stdineof = 0;
 
 	FD_ZERO(&rset);
 	for(;;)
 	{
-		FD_SET(fileno(fd), &rset);
+		if(stdineof == 0)
+			FD_SET(fileno(fd), &rset);
 		FD_SET(sockfd,&rset);
 		maxfdp1 = max(fileno(fd), sockfd) + 1;
 		select(maxfdp1, &rset, NULL, NULL, NULL);
@@ -44,6 +46,11 @@ void func(FILE* fd, int sockfd)
 			}
 			if(n == 0)
 			{
+				if(stdineof == -1)
+				{
+					printf("server close write.\n")	;
+					break;
+				}
 				printf("server terminated prematurely\n");	
 				break;
 			}
@@ -51,38 +58,18 @@ void func(FILE* fd, int sockfd)
 		}
 		if(FD_ISSET(fileno(fd), &rset))
 		{
-			if(fgets(send, MAXLINE, fd) == NULL)
+			if((n = read(fileno(fd), send, MAXLINE)) == 0)
 			{
-				break;	
+				stdineof = -1;
+				shutdown(sockfd, SHUT_WR);
+				FD_CLR(fileno(fd), &rset);
+				printf("read return 0\n");
+				continue;
 			}
+			send[n] = '\0';
 			write(sockfd, send, MAXLINE);
 		}
 	}
-	
-#if 0
-   while(fgets(send, MAXLINE, fd) != NULL)
-   {
-        write(sockfd, send, MAXLINE) ;
-#if 0
-		sleep(1);
-        write(sockfd, send, MAXLINE) ;
-#endif
-        if((n = read(sockfd, recv, MAXLINE)) < 0)
-        {
-			if(errno == EINTR)
-				continue;
-            perror("read") ;
-            return;
-        }
-		if(n == 0)
-		{
-			printf("server is termined.\n");
-			return;
-		}
-		
-        fputs(recv, stdout);
-   }
-#endif
 }
 
 int main(int argc, char** argv)

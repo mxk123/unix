@@ -40,6 +40,10 @@ begin:
 	{
 		perror("read")	;
 	}
+	else if(n == 0)
+	{
+		printf("client close write\n")	;
+	}
 
 }
 
@@ -71,7 +75,7 @@ int main()
         return -1;
     }
 	signal(SIGCHLD, sig_chld);
-//	sleep(10);
+	
     for(;;)
     {
         int len = sizeof(cli);

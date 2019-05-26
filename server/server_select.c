@@ -109,13 +109,14 @@ int main(int argc, char** argv)
 			{
 				if((n = read(sockfd, buf, MAXLINE)) == 0)	
 				{
-					printf("client is close\n");
+//					printf("client is close\n");
 					close(sockfd);
 					FD_CLR(sockfd, &allset);
 					client[i] = -1;
 				}
 				else
 				{
+					printf("%s", buf);
 write:
 					n = write(sockfd, buf, n);
 					if(n < 0 && errno == EINTR)
